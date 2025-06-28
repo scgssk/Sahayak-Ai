@@ -80,11 +80,11 @@ export default function OfflineScreen() {
         ))
       )}
 
-      <View style={{ marginTop: 20 }}>
+      {/* <View style={{ marginTop: 20 }}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={{ color: '#3e64ff' }}>← Go Back</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </ScrollView>
   );
 }
