@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import axios from 'axios';
 import multer from 'multer';
 import fs from 'fs';
-import path from 'path';
 
 
 dotenv.config();
@@ -212,6 +211,57 @@ Start the Markdown table after this line: ---TABLE---
 }
 
 });
+
+
+app.post('/api/visual-helper', async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt is required' });
+  }
+
+  try {
+    const generationPrompt = `
+You're a teaching assistant for rural classrooms with only blackboards.
+
+For the topic: "${prompt}", generate:
+1. A simple **text-based diagram** using arrows (→, ↓), indentation, or lines.
+2. A plain-language explanation of the diagram (sketching guide).
+
+Respond in this JSON format:
+{
+  "diagram": "your text diagram here",
+  "explanation": "your step-by-step sketch guide"
+}
+`;
+
+    const response = await axios.post(GEMINI_API_URL, {
+      contents: [{ parts: [{ text: generationPrompt }] }],
+    });
+
+    const content = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Extract JSON safely from code block
+    const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) ||
+                      content.match(/```([\s\S]*?)\s*```/) ||
+                      [null, content];
+
+    const cleaned = jsonMatch[1].trim();
+    const parsed = JSON.parse(cleaned);
+
+    return res.json({
+      diagramText: parsed.diagram,
+      explanation: parsed.explanation,
+    });
+  } catch (err) {
+    console.error('❌ Gemini Visual Helper Error:', err?.response?.data || err.message);
+    return res.status(500).json({
+      error: 'Failed to generate visual explanation',
+      details: err?.response?.data || err.message,
+    });
+  }
+});
+
 
 
 

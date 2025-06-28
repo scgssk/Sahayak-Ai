@@ -56,7 +56,6 @@ export default function StoryScreen() {
     const key = `story:${topic}:${language}:grade${grade}`;
     try {
       await AsyncStorage.setItem(key, storyText);
-      console.log('Story saved locally:', key);
     } catch (err) {
       console.error('Error saving story:', err);
     }
